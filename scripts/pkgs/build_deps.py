@@ -11,42 +11,29 @@ import tempfile
 
 from pkgs.constants import (
     SW, PREFIX, set_build_dir, pkg_ext, set_current_source, iswindows,
-    set_tdir, mkdtemp, islinux, isosx)
+    set_tdir, mkdtemp, isosx)
 from pkgs.download_sources import download, filename_for_dep
 from pkgs.utils import (
     run_shell, install_package, create_package, extract_source, simple_build,
-    python_build, set_title, fix_install_names, rmtree)
-
-python_deps = 'setuptools six cssutils dateutil dnspython mechanize pygments pycrypto apsw lxml pillow netifaces psutil dbuspython macfsevents'.strip().split()
+    set_title, fix_install_names, rmtree)
 
 all_deps = (
     # Build tools
-    'nasm cmake easylzma '
+    'pkg-config cmake '
     # Python and its dependencies
-    'zlib bzip2 expat sqlite libffi openssl ncurses readline python pywin32 '
+    'zlib bzip2 expat sqlite libffi openssl ncurses readline python '
     # Miscellaneous dependencies
-    'icu libjpeg libpng libwebp freetype fontconfig iconv libxml2 libxslt chmlib optipng mozjpeg libusb libmtp plist usbmuxd imobiledevice '
-    # PDF libraries
-    'poppler podofo '
-    # Qt
-    'libgpg-error libgcrypt glib dbus dbusglib qt webkit sip pyqt '
-).strip().split() + python_deps
+    'freetype fontconfig glew glfw '
+).strip().split()
 
-if not islinux:
-    for x in 'libffi ncurses readline libgpg-error libgcrypt glib dbus dbusglib dbuspython'.split():
-        all_deps.remove(x)
-if iswindows:
-    for x in 'libusb libmtp bzip2 iconv fontconfig'.split():
-        all_deps.remove(x)
-else:
-    all_deps.remove('easylzma')
-    all_deps.remove('pywin32')
 if isosx:
     all_deps.remove('bzip2')
-if not isosx:
-    all_deps.remove('nasm')
+    all_deps.remove('fontconfig')
+    all_deps.remove('freetype')
+    all_deps.remove('glew')
+else:
     all_deps.remove('cmake')
-    all_deps.remove('macfsevents')
+    all_deps.remove('pkg-config')
 
 
 def ensure_clear_dir(dest_dir):
@@ -95,11 +82,7 @@ def build(dep, args, dest_dir):
         if hasattr(m, 'main'):
             m.main(args)
         else:
-            if dep in python_deps:
-                python_build()
-                output_dir = os.path.join(output_dir, os.path.basename(SW), os.path.basename(PREFIX))
-            else:
-                simple_build()
+            simple_build()
         if isosx:
             fix_install_names(m, output_dir)
     except Exception:
@@ -118,13 +101,15 @@ def build(dep, args, dest_dir):
     rmtree(tsdir)
 
 
-def init_env(deps=all_deps):
+def init_env(deps=all_deps, quick_build=False):
     dest_dir = PREFIX
-    ensure_clear_dir(dest_dir)
     tdir = tempfile.tempdir if iswindows else os.path.join(tempfile.gettempdir(), 't')
     ensure_clear_dir(tdir)
     set_tdir(tdir)
-    install_pkgs(deps, dest_dir)
+    do_clear = not (quick_build and os.path.exists(dest_dir))
+    if do_clear:
+        ensure_clear_dir(dest_dir)
+        install_pkgs(deps, dest_dir)
     return dest_dir
 
 

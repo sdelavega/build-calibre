@@ -27,6 +27,33 @@
     },
 
     {
+        "name": "pkg-config",
+        "unix": {
+            "filename": "pkg-config-0.29.tar.gz",
+            "hash": "sha1:f4b19d203b3896a4293af4b62c7f908063c88a5a",
+            "urls": ["https://pkg-config.freedesktop.org/releases/{filename}"]
+        }
+    },
+
+    {
+        "name": "glew",
+        "unix": {
+            "filename": "glew-2.0.0.tgz",
+            "hash": "sha1:6e15c84f7e1fad34cd3679f784a233744ddf048f",
+            "urls": ["http://downloads.sourceforge.net/sourceforge/glew/{filename}"]
+        }
+    },
+
+    {
+        "name": "glfw",
+        "unix": {
+            "filename": "glfw-3.2.1.zip",
+            "hash": "sha1:d40d8d491e53c105a01a02b4b53242ab7b2d27c3",
+            "urls": ["https://github.com/glfw/glfw/releases/download/3.2.1/{filename}"]
+        }
+    },
+
+    {
         "name": "sqlite",
         "unix": {
             "filename": "sqlite-autoconf-3130000.tar.gz",
@@ -75,14 +102,9 @@
     {
         "name": "python",
         "unix": {
-            "filename": "Python-2.7.12.tar.xz",
-            "hash": "md5:57dffcee9cee8bb2ab5f82af1d8e9a69",
-            "urls": ["https://www.python.org/ftp/python/2.7.12/{filename}"]
-        },
-        "windows": {
-            "filename":"python-296b98a308cfc8eeccb37f60c4a6e8149b8c5a1a.tar.bz2",
-            "hash":"git:296b98a308cfc8eeccb37f60c4a6e8149b8c5a1a",
-            "urls":["https://github.com/kovidgoyal/cpython.git"]
+            "filename": "Python-3.6.0.tar.xz",
+            "hash": "md5:82b143ebbf4514d7e05876bed7a6b1f5",
+            "urls": ["https://www.python.org/ftp/python/3.6.0/{filename}"]
         }
     },
 

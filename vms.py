@@ -103,17 +103,20 @@ class Rsync(object):
         f = self.name + ':' + from_
         self(f, to, excludes)
 
-    def to_vm(self, from_, to, excludes=frozenset()):
+    def to_vm(self, from_, to, excludes=frozenset(), delete_excluded=True):
         t = self.name + ':' + to
-        self(from_, t, excludes)
+        self(from_, t, excludes, delete_excluded)
 
-    def __call__(self, from_, to, excludes=frozenset()):
+    def __call__(self, from_, to, excludes=frozenset(), delete_excluded=True):
         ssh = ' '.join(SSH)
         if isinstance(excludes, type('')):
             excludes = excludes.split()
         excludes = frozenset(excludes) | self.excludes
         excludes = ['--exclude=' + x for x in excludes]
-        cmd = ['rsync', '-a', '-e', ssh, '--delete', '--delete-excluded'] + excludes + [from_ + '/', to]
+        cmd = ['rsync', '-a', '-e', ssh, '--delete']
+        if delete_excluded:
+            cmd.append('--delete-excluded')
+        cmd += excludes + [from_ + '/', to]
         # print(' '.join(cmd))
         print('Syncing', from_)
         p = subprocess.Popen(cmd)
@@ -121,21 +124,26 @@ class Rsync(object):
             raise SystemExit(p.wait())
 
 
-def get_calibre_dir():
-    return os.environ.get('CALIBRE_SRC_DIR', os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'calibre'))
+def get_kitty_dir():
+    return os.environ.get('KITTY_SRC_DIR', os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'kitty'))
 
 
-def to_vm(rsync, output_dir, prefix='/', name='sw'):
+def send_kitty(rsync, prefix='/'):
+    kitty_dir = get_kitty_dir()
+    if os.path.exists(os.path.join(kitty_dir, 'setup.py')):
+        rsync.to_vm(kitty_dir, prefix + 'kitty', '/linux-package /build *.so *.pyd *.pyc', delete_excluded=False)
+
+
+def to_vm(rsync, output_dir, prefix='/', name='sw', sync_sw=True):
     print('Mirroring data to the VM...')
-    calibre_dir = get_calibre_dir()
-    if os.path.exists(os.path.join(calibre_dir, 'setup.py')):
-        rsync.to_vm(calibre_dir, prefix + 'calibre', '/imgsrc /build /dist /manual /format_docs /translations /.build-cache /tags /Changelog* *.so *.pyd')
+    send_kitty(rsync, prefix)
 
     for x in 'scripts patches'.split():
         rsync.to_vm(x, prefix + x)
 
     rsync.to_vm('sources-cache', prefix + 'sources')
-    rsync.to_vm(output_dir, prefix + name, '/sw')
+    if sync_sw:
+        rsync.to_vm(output_dir, prefix + name, '/sw')
 
 
 def from_vm(rsync, output_dir, prefix='/', name='sw'):

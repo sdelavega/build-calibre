@@ -7,13 +7,13 @@ from __future__ import (unicode_literals, division, absolute_import,
 import sys
 import os
 import tempfile
+import subprocess
 
 _plat = sys.platform.lower()
 iswindows = 'win32' in _plat or 'win64' in _plat
 isosx = 'darwin' in _plat
 islinux = not iswindows and not isosx
 pkg_ext = 'pkg'
-py_ver = '2.7'
 
 
 def uniq(vals):
@@ -25,6 +25,8 @@ def uniq(vals):
 
 
 ROOT = 'C:\\' if iswindows else '/'
+if isosx:
+    ROOT = '/Users/shared/buildbot/'
 is64bit = sys.maxsize > (1 << 32)
 SW = ROOT + 'sw'
 if iswindows:
@@ -33,15 +35,20 @@ if iswindows:
 SOURCES = ROOT + 'sources'
 PATCHES = ROOT + 'patches'
 SCRIPTS = ROOT + 'scripts'
-CALIBRE_DIR = ROOT + 'calibre'
+KITTY_DIR = ROOT + 'kitty'
 if iswindows:
     tempfile.tempdir = 'C:\\t\\t'
 PREFIX = os.path.join(SW, 'sw')
 BIN = os.path.join(PREFIX, 'bin')
-PYTHON = os.path.join(PREFIX, 'private', 'python', 'python.exe') if iswindows else os.path.join(BIN, 'python')
+PYTHON = os.path.join(PREFIX, 'private', 'python', 'python.exe') if iswindows else os.path.join(BIN, 'python3')
 
 worker_env = {}
 cygwin_paths = []
+
+
+def get_py_ver():
+    return subprocess.check_output([PYTHON, '-c', 'import sysconfig; print(sysconfig.get_python_version())']).decode('utf-8').strip()
+
 
 if iswindows:
     CFLAGS = CPPFLAGS = LIBDIR = LDFLAGS = ''
